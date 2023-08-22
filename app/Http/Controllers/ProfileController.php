@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreProfile;
+use App\Models\Doc;
+use App\Models\DocCategory;
 use App\Models\EducationDetail;
 use App\Models\Family;
 use App\Models\Personal;
@@ -20,6 +22,7 @@ class ProfileController extends Controller
     private $family = null;
     private $work = null;
     private $education = null;
+    private $doc = null;
 
     public function __construct()
     {
@@ -27,6 +30,7 @@ class ProfileController extends Controller
         $this->family = new Family();
         $this->work = new WorkExperience();
         $this->education = new EducationDetail();
+        $this->doc = new Doc();
 
         //Permission Middlewares
         $this->middleware('permission:profile-list|profile-create|profile-edit|profile-delete', ['only' => ['index', 'store']]);
@@ -48,6 +52,7 @@ class ProfileController extends Controller
     public function store(StoreProfile $request)
     {
         //validation
+        // dd($request->all());
         $validated = $request->validated();
 
         DB::beginTransaction();
@@ -62,7 +67,7 @@ class ProfileController extends Controller
                 'personal_contact_number' => $request->contact_number,
                 'residential_address' => $request->residential_address,
                 'permanent_address' => $request->permanent_address,
-                'cnic' => $request->cnic,
+                'cnic' => $request->cnic_num,
                 'meezan_bank' => $request->meezan_account,
                 'iban_number' => $request->iban,
             ]);
@@ -102,11 +107,40 @@ class ProfileController extends Controller
                 'refference_designation' => $request->ref_designation,
             ]);
 
+            //personal Files
+            if($request->hasFile('updated_resume')){
+                $this->singleFileUpload($request->file('updated_resume'), 1);
+            }
+            if($request->hasFile('passport_size_photo')){
+                $this->singleFileUpload($request->file('passport_size_photo'), 2);
+            }
+            if($request->hasFile('cnic')){
+                $this->multiFileUpload($request->file('cnic'), 3);
+            }
+
+            //Family Files
+            if($request->hasFile("parent's_CNIC_Each")){
+                $this->multiFileUpload($request->file("parent's_CNIC_Each"), 4);
+            }
+
+            //work Experience Files
+            if($request->hasFile("experience_latters")){
+                $this->multiFileUpload($request->file("experience_latters"), 5);
+            }
+            if($request->hasFile('last_salary_slip')){
+                $this->singleFileUpload($request->file('last_salary_slip'), 7);
+            }
+
+            //Educational Documents
+            if($request->hasFile("all_educational_documents")){
+                $this->multiFileUpload($request->file("all_educational_documents"), 6);
+            }
+
             DB::commit();
             return back()->with('success', 'Data Inserted Successfully.');
         } catch (Exception $e) {
             DB::rollback();
-            dd($e->getMessage());
+            dd($e);
         }
     }
 
@@ -128,5 +162,29 @@ class ProfileController extends Controller
     public function destroy(string $id)
     {
         //
+    }
+
+
+    //upload Image
+    public function singleFileUpload($data, $id)
+    {
+        $file = $data;
+        $name = uniqid().'-'.time() . '-' . $file->getClientOriginalName();
+        $file->move('images', $name);
+        return $this->doc->store($name, $id);
+
+    }
+
+    //upload Multiple Images
+    public function multiFileUpload($data, $id)
+    {
+        $results = [];
+        foreach($data as $item){
+            $file = $item;
+            $name = uniqid().'-'.time() . '-' . $file->getClientOriginalName();
+            $results[] = $file->move('images', $name);
+            $this->doc->store($name, $id);
+        }
+        return $results;
     }
 }

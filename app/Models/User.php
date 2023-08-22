@@ -65,4 +65,8 @@ class User extends Authenticatable
         return $this->hasOne(Family::class);
     }
 
+    public function doc(){
+        return $this->hasOne(Doc::class);
+    }
+
 }
