@@ -41,7 +41,7 @@ class ProfileController extends Controller
 
     public function index()
     {
-        $profile = User::with('personal', 'education', 'work', 'family')->find(Auth::user()->id);
+        $profile = User::with('docs','personal', 'education', 'work', 'family')->find(Auth::user()->id);
         return view('profiles.index', compact('profile'));
     }
 
@@ -135,6 +135,8 @@ class ProfileController extends Controller
             if($request->hasFile("all_educational_documents")){
                 $this->multiFileUpload($request->file("all_educational_documents"), 6);
             }
+
+
 
             DB::commit();
             return back()->with('success', 'Data Inserted Successfully.');

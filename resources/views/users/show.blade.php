@@ -268,6 +268,25 @@
                     </div>
                 @endif
 
+                {{-- Work Experience Data --}}
+                <h1 class="h2">All Documents</h1>
+                @if ($profile->docs->count() > 0)
+                    @foreach ($profile->docs as $item)
+                        <div class="col-xs-12 col-sm-12 col-md-12">
+                            <div class="form-group">
+                                {{-- <strong>Doc Type</strong> --}}
+                                <a href="{{ asset('images/'.$item->name) }}"><img style="width: 100px" src="{{ asset('images/'.$item->name) }}"></a>
+                            </div>
+                        </div>
+                    @endforeach
+                @else
+                    <div class="col-xs-12 col-sm-12 col-md-12">
+                        <div class="form-group">
+                            <h1 class="h4 text-danger">Work Data Not Found</h1>
+                        </div>
+                    </div>
+                @endif
+
             </div>
         </div>
     </section>

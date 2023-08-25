@@ -83,7 +83,7 @@ class UserController extends Controller
     public function show($id)
     {
         $user = User::find($id);
-        $profile = User::with('personal', 'education', 'work', 'family')->find($id);
+        $profile = User::with('docs', 'personal', 'education', 'work', 'family')->find($id);
         return view('users.show', compact('user', 'profile'));
     }
 
